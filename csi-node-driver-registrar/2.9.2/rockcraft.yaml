@@ -1,0 +1,63 @@
+# Copyright 2024 Canonical, Ltd.
+# See LICENSE file for licensing details
+
+# Based on: https://github.com/kubernetes-csi/node-driver-registrar/blob/v2.9.2/Dockerfile
+name: csi-node-driver-registrar
+summary: csi-node-driver-registrar rock
+description: |
+    A rock containing the CSI node driver registrar.
+
+    The node-driver-registrar is a sidecar container that registers the CSI
+    driver with Kubelet using the kubelet plugin registration mechanism.
+
+    This is necessary because Kubelet is responsible for issuing CSI NodeGetInfo,
+    NodeStageVolume, NodePublishVolume calls. The node-driver-registrar registers
+    your CSI driver with Kubelet so that it knows which Unix domain socket to issue
+    the CSI calls on.
+license: Apache-2.0
+version: 2.9.2
+
+base: bare
+build-base: ubuntu@22.04
+
+platforms:
+  amd64:
+  arm64:
+
+environment:
+  APP_VERSION: 2.9.2
+
+# Services to be loaded by the Pebble entrypoint.
+services:
+  csi-node-driver-registrar:
+    summary: "csi-node-driver-registrar service"
+    override: replace
+    startup: enabled
+    command: "/csi-node-driver-registrar [ --help ]"
+    on-success: shutdown
+    on-failure: shutdown
+
+entrypoint-service: csi-node-driver-registrar
+
+parts:
+  build-csi-node-driver-registrar:
+    plugin: go
+    source: https://github.com/kubernetes-csi/node-driver-registrar.git
+    source-type: git
+    source-tag: v${CRAFT_PROJECT_VERSION}
+    source-depth: 1
+    build-snaps:
+      - go/1.20/stable
+    build-environment:
+      - CGO_ENABLED: 0
+      - GOOS: linux
+      - GOARCH: $CRAFT_ARCH_BUILD_FOR
+      - VERSION: $CRAFT_PROJECT_VERSION
+      - LDFLAGS: >
+          -X main.version=${VERSION} -extldflags "-static"
+    go-buildtags:
+      - "mod=vendor"
+    go-generate:
+      - ./cmd/csi-node-driver-registrar
+    organize:
+      bin/csi-node-driver-registrar: ./
