@@ -1,0 +1,60 @@
+# Copyright 2024 Canonical, Ltd.
+# See LICENSE file for licensing details
+
+# Based on: https://github.com/kubernetes-csi/external-provisioner/blob/v3.6.4/Dockerfile
+name: csi-provisioner
+summary: csi-provisioner rock
+description: |
+    A rock containing the CSI provisioner.
+
+    The external-provisioner is a sidecar container that dynamically provisions
+    volumes by calling `CreateVolume` and `DeleteVolume` functions of CSI drivers.
+    It is necessary because internal persistent volume controller running in Kubernetes
+    `controller-manager` does not have any direct interfaces to CSI drivers.
+license: Apache-2.0
+version: 3.6.4
+
+base: bare
+build-base: ubuntu@22.04
+
+platforms:
+  amd64:
+  arm64:
+
+environment:
+  APP_VERSION: 3.6.4
+
+# Services to be loaded by the Pebble entrypoint.
+services:
+  csi-provisioner:
+    summary: "csi-provisioner service"
+    override: replace
+    startup: enabled
+    command: "/csi-provisioner [ --help ]"
+    on-success: shutdown
+    on-failure: shutdown
+
+entrypoint-service: csi-provisioner
+
+parts:
+  build-csi-provisioner:
+    plugin: go
+    source: https://github.com/kubernetes-csi/external-provisioner.git
+    source-type: git
+    source-tag: v${CRAFT_PROJECT_VERSION}
+    source-depth: 1
+    build-snaps:
+      - go/1.21/stable
+    build-environment:
+      - CGO_ENABLED: 0
+      - GOOS: linux
+      - GOARCH: $CRAFT_ARCH_BUILD_FOR
+      - VERSION: $CRAFT_PROJECT_VERSION
+      - LDFLAGS: >
+          -X main.version=${VERSION} -extldflags "-static"
+    go-buildtags:
+      - "mod=vendor"
+    go-generate:
+      - ./cmd/csi-provisioner
+    organize:
+      bin/csi-provisioner: ./
