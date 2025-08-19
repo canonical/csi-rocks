@@ -47,14 +47,20 @@ parts:
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
     build-snaps:
-      - go/1.21/stable
+      - go/1.21-fips/stable
+    stage-snaps:
+      - core22/fips-updates/stable
+    stage:
+      - -bin
     build-environment:
-      - CGO_ENABLED: 0
+      - CGO_ENABLED: 1
       - GOOS: linux
       - GOARCH: $CRAFT_ARCH_BUILD_FOR
       - VERSION: $CRAFT_PROJECT_VERSION
+      - GOTOOLCHAIN: local
+      - GOEXPERIMENT: opensslcrypto
       - LDFLAGS: >
-          -X main.version=${VERSION} -extldflags "-static"
+          -X main.version=${VERSION}
     go-buildtags:
       - "mod=vendor"
     go-generate:
