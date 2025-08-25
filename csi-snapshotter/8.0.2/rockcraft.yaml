@@ -32,6 +32,11 @@ services:
 entrypoint-service: csi-snapshotter
 
 parts:
+  openssl:
+    plugin: nil
+    stage-packages:
+      - openssl-fips-module-3 # a Pro only FIPS package for openssl
+      - openssl # now automatically selected from fips-preview
   build-csi-snapshotter:
     plugin: go
     source: https://github.com/kubernetes-csi/external-snapshotter.git
@@ -40,10 +45,6 @@ parts:
     source-depth: 1
     build-snaps:
       - go/1.23-fips/stable
-    stage-snaps:
-      - core22/fips-updates/stable
-    stage:
-      - -bin
     build-environment:
       - CGO_ENABLED: 1
       - GOOS: linux
