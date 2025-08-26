@@ -42,11 +42,11 @@ def _clone_helm_chart_repo(
 def _get_nfsplugin_csi_helm_cmd(chart_path: pathlib.Path):
     image_tuples = [
         # (rock_name, version, helm_image_subitem)
-        ("csi-provisioner", "4.0.0", "csiProvisioner"),
-        ("livenessprobe", "2.12.0", "livenessProbe"),
-        ("csi-node-driver-registrar", "2.10.0", "nodeDriverRegistrar"),
+        ("csi-provisioner", "5.0.2", "csiProvisioner"),
+        ("livenessprobe", "2.13.1", "livenessProbe"),
+        ("csi-node-driver-registrar", "2.11.1", "nodeDriverRegistrar"),
         ("snapshot-controller", "6.3.3", "externalSnapshotter"),
-        ("csi-snapshotter", "6.3.3", "csiSnapshotter"),
+        ("csi-snapshotter", "8.0.2", "csiSnapshotter"),
     ]
 
     images = []
