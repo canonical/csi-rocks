@@ -1,0 +1,62 @@
+# Copyright 2024 Canonical, Ltd.
+# See LICENSE file for licensing details
+
+# Based on: https://github.com/kubernetes-csi/external-snapshotter/blob/v8.0.2/cmd/csi-snapshotter/Dockerfile
+name: csi-snapshotter
+summary: csi-snapshotter rock
+description: |
+    A rock containing the CSI snapshotter.
+license: Apache-2.0
+version: 8.3.0
+
+base: bare
+build-base: ubuntu@22.04
+
+platforms:
+  amd64:
+  arm64:
+
+environment:
+  APP_VERSION: 8.3.0
+
+# Services to be loaded by the Pebble entrypoint.
+services:
+  csi-snapshotter:
+    summary: "csi-snapshotter service"
+    override: replace
+    startup: enabled
+    command: "/csi-snapshotter [ --help ]"
+    on-success: shutdown
+    on-failure: shutdown
+
+entrypoint-service: csi-snapshotter
+
+parts:
+  openssl:
+    plugin: nil
+    stage-packages:
+      - openssl-fips-module-3 # a Pro only FIPS package for openssl
+      - openssl # now automatically selected from fips-preview
+  build-csi-snapshotter:
+    plugin: go
+    source: https://github.com/kubernetes-csi/external-snapshotter.git
+    source-type: git
+    source-tag: v${CRAFT_PROJECT_VERSION}
+    source-depth: 1
+    build-snaps:
+      - go/1.23-fips/stable
+    build-environment:
+      - CGO_ENABLED: 1
+      - GOOS: linux
+      - GOARCH: $CRAFT_ARCH_BUILD_FOR
+      - VERSION: $CRAFT_PROJECT_VERSION
+      - GOTOOLCHAIN: local
+      - GOEXPERIMENT: opensslcrypto
+      - LDFLAGS: >
+          -X main.version=${VERSION}
+    go-buildtags:
+      - "mod=vendor"
+    go-generate:
+      - ./cmd/csi-snapshotter
+    organize:
+      bin/csi-snapshotter: ./
