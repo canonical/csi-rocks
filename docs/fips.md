@@ -22,18 +22,19 @@ parts:
 ...
 ```
 
-## Manual build and test
+## Manual build
 
-To manually build the FIPS-compliant ROCK images you need an Ubuntu Pro token. Once obtained, you can follow these intructions:
+**Prerequisites**:
 
-1. **Prerequisites**:
-  - `rockcraft` version that contains the pro feature (see [this discourse post]).
+- a `rockcraft` version that allows building with Ubuntu Pro services (refer to [this discourse post]).
 
-2. **Build Command**:
+**Building the Image**:
 
-  ```bash
-  sudo rockcraft pack --pro=fips-updates
-  ```
+Use the following command to build the image:
+
+```bash
+sudo rockcraft pack --pro=fips-updates
+```
 
 <!-- LINKS -->
 
