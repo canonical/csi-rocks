@@ -1,5 +1,5 @@
 ## Overview
-This document provides an analysis of CSI ROCK's cryptographic implementation with respect to FIPS 140 compliance requirements.
+This document provides an analysis of CSI ROCK's cryptographic implementation with respect to [FIPS 140-3] compliance requirements.
 
 > **Note:** As of now, pebble is not built in a FIPS-compliant way. This document will be updated once it is.
 
@@ -22,20 +22,22 @@ parts:
 ...
 ```
 
-## Manual build and test
+## Manual build
 
-To manually build the FIPS-compliant ROCK images you need an Ubuntu Pro token. Once obtained, you can follow these intructions:
+**Prerequisites**:
 
-1. **Prerequisites**:
-  - `rockcraft` version that contains the pro feature (see [this discourse post]).
+- a `rockcraft` version that allows building with Ubuntu Pro services (refer to [this discourse post]).
 
-2. **Build Command**:
+**Building the Image**:
 
-  ```bash
-  sudo rockcraft pack --pro=fips-updates
-  ```
+Use the following command to build the image:
+
+```bash
+sudo rockcraft pack --pro=fips-updates
+```
 
 <!-- LINKS -->
 
+[FIPS 140-3]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.140-3.pdf
 [Go toolchain from Microsoft]: https://github.com/microsoft/go/blob/microsoft/release-branch.go1.23/eng/doc/fips/README.md
 [this discourse post]: https://discourse.ubuntu.com/t/build-rocks-with-ubuntu-pro-services/57578
