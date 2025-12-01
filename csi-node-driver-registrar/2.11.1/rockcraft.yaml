@@ -45,26 +45,28 @@ parts:
     stage-packages:
       - openssl-fips-module-3 # a Pro only FIPS package for openssl
       - openssl # now automatically selected from fips-preview
-  build-csi-node-driver-registrar:
-    plugin: go
-    source: https://github.com/kubernetes-csi/node-driver-registrar.git
+  csi-node-driver-registrar:
+    plugin: nil
     source-type: git
+    source: https://github.com/kubernetes-csi/node-driver-registrar.git
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
-    build-snaps:
-      - go/1.23-fips/stable
-    build-environment:
-      - CGO_ENABLED: 1
-      - GOOS: linux
-      - GOARCH: $CRAFT_ARCH_BUILD_FOR
-      - VERSION: $CRAFT_PROJECT_VERSION
-      - GOTOOLCHAIN: local
-      - GOEXPERIMENT: opensslcrypto
-      - LDFLAGS: >
-          -X main.version=${VERSION}
-    go-buildtags:
-      - "mod=vendor"
-    go-generate:
-      - ./cmd/csi-node-driver-registrar
-    organize:
-      bin/csi-node-driver-registrar: ./
+    override-build: |
+      # NOTE: (mateo) Force Go FIPS 1.24, as some CVEs are patched only
+      # in 1.24
+
+      snap list go
+      snap refresh go --channel 1.24-fips/stable
+      export CGO_ENABLED=1
+      export GOOS=linux
+      export GOARCH=$CRAFT_ARCH_BUILD_FOR
+      export VERSION=$CRAFT_PROJECT_VERSION
+      export GOTOOLCHAIN=local
+      export GOEXPERIMENT=opensslcrypto
+
+      go generate ./cmd/csi-node-driver-registrar
+      go build \
+        -tags "mod=vendor,ms_tls13kdf" \
+        -ldflags "-X main.version=${VERSION}" \
+        -o $CRAFT_PART_INSTALL/csi-node-driver-registrar \
+        ./cmd/csi-node-driver-registrar
