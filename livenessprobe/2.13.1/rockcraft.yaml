@@ -41,13 +41,15 @@ parts:
       - openssl-fips-module-3 # a Pro only FIPS package for openssl
       - openssl # now automatically selected from fips-preview
   build-livenessprobe:
+    after: [pebble]
     plugin: go
     source: https://github.com/kubernetes-csi/livenessprobe.git
     source-type: git
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
-    build-snaps:
-      - go/1.22-fips/stable
+    override-build: |
+      snap refresh go --channel=1.22-fips/stable
+      craftctl default
     build-environment:
       - CGO_ENABLED: 1
       - GOOS: linux
