@@ -38,13 +38,15 @@ entrypoint-service: csi-resizer
 
 parts:
   build-csi-resizer:
+    after: [pebble]
     plugin: go
     source: https://github.com/kubernetes-csi/external-resizer.git
     source-type: git
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
-    build-snaps:
-      - go/1.21/stable
+    override-build: |
+      snap refresh go --channel=1.21/stable
+      craftctl default
     build-environment:
       - CGO_ENABLED: 0
       - GOOS: linux
