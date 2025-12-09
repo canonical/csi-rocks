@@ -1,7 +1,7 @@
 # Copyright 2024 Canonical, Ltd.
 # See LICENSE file for licensing details
 
-# Based on: https://github.com/kubernetes-csi/external-resizer/blob/v1.14.0/Dockerfile
+# Based on: https://github.com/kubernetes-csi/external-resizer/blob/v1.11.2/Dockerfile
 name: csi-resizer
 summary: csi-resizer rock
 description: |
@@ -42,14 +42,19 @@ parts:
     stage-packages:
       - openssl-fips-module-3 # a Pro only FIPS package for openssl
       - openssl # now automatically selected from fips-preview
-  build-csi-resizer:
+  csi-resizer:
+    after: [pebble]
     plugin: go
-    source: https://github.com/kubernetes-csi/external-resizer.git
+    source: https://github.com/canonical/external-resizer.git
     source-type: git
-    source-tag: v${CRAFT_PROJECT_VERSION}
+    source-tag: v${CRAFT_PROJECT_VERSION}-ck0
     source-depth: 1
-    build-snaps:
-      - go/1.24-fips/stable
+    override-build: |
+      # NOTE: (mateo) Use Go FIPS 1.24, the project originally required
+      # 1.21, but due to CRITICAL CVEs, this version was updated.
+
+      snap refresh go --channel 1.24-fips/stable
+      craftctl default
     build-environment:
       - CGO_ENABLED: 1
       - GOOS: linux
@@ -61,6 +66,7 @@ parts:
           -X main.version=${VERSION}
     go-buildtags:
       - "mod=vendor"
+      - ms_tls13kdf
     go-generate:
       - ./cmd/csi-resizer
     organize:
