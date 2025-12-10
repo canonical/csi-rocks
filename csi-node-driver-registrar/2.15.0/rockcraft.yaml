@@ -53,8 +53,8 @@ parts:
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
     override-build: |
-      # NOTE: (mateo) Force Go FIPS 1.24, as some CVEs are patched only
-      # in 1.24
+      # NOTE: (mateo) Use Go FIPS 1.24, to prevent Pebble from rolling 
+      # back the version to the embedded version.
       snap refresh go --channel=1.24-fips/stable
       craftctl default
     build-environment:
