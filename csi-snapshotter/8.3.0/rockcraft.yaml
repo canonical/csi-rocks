@@ -45,8 +45,8 @@ parts:
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
     override-build: |
-      # NOTE: (mateo) Use Go FIPS 1.24, the project originally required
-      # 1.21, but due to CRITICAL CVEs, this version was updated.
+      # NOTE: (mateo) Use Go FIPS 1.24, to prevent Pebble from rolling 
+      # back the version to the embedded version.
 
       snap refresh go --channel 1.24-fips/stable
       craftctl default
