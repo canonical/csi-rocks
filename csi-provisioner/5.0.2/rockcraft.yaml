@@ -45,9 +45,9 @@ parts:
   csi-provisioner:
     after: [pebble]
     plugin: go
-    source: https://github.com/canonical/external-provisioner.git
+    source: https://github.com/kubernetes-csi/external-provisioner.git
     source-type: git
-    source-tag: v${CRAFT_PROJECT_VERSION}-ck0
+    source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
     override-build: |
       # NOTE: (mateo) Use Go FIPS 1.24, the project originally required
