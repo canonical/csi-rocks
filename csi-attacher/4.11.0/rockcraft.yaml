@@ -15,7 +15,7 @@ license: Apache-2.0
 version: 4.11.0
 
 base: bare
-build-base: ubuntu@22.04
+build-base: ubuntu@24.04
 
 platforms:
   amd64:
@@ -45,7 +45,7 @@ parts:
     source-tag: v${CRAFT_PROJECT_VERSION}
     source-depth: 1
     override-build: |
-      snap refresh go --channel=1.22/stable
+      snap refresh go --channel=1.25/stable
       craftctl default
     build-environment:
       - CGO_ENABLED: 0
