@@ -95,15 +95,40 @@ def test_nfsplugin_integration(
         )
 
     # Deploy a NFS server and an nginx Pod with a NFS volume attached.
-    for item in ["nfs-server.yaml", "nginx-pod.yaml"]:
-        manifest = MANIFESTS_DIR / item
-        function_instance.exec(
-            ["k8s", "kubectl", "apply", "-f", "-"],
-            input=pathlib.Path(manifest).read_bytes(),
-        )
+    function_instance.exec(
+        ["k8s", "kubectl", "apply", "-f", "-"],
+        input=(MANIFESTS_DIR / "nfs-server.yaml").read_bytes(),
+    )
+    k8s_util.wait_for_deployment(function_instance, "nfs-server")
+
+    # The share is mounted by the in-kernel NFS client from the host network
+    # namespace, which Cilium's socket load balancing does not intercept, so
+    # Service ClusterIPs are unreachable for the mount. Address the Pod directly.
+    process = function_instance.exec(
+        [
+            "k8s",
+            "kubectl",
+            "get",
+            "pod",
+            "--selector",
+            "app=nfs-server",
+            "-o",
+            "jsonpath={.items[0].status.podIP}",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    nfs_server_address = process.stdout.strip()
+
+    nginx_pod_manifest = (MANIFESTS_DIR / "nginx-pod.yaml").read_text()
+    function_instance.exec(
+        ["k8s", "kubectl", "apply", "-f", "-"],
+        input=nginx_pod_manifest.replace(
+            "$NFS_SERVER_ADDRESS", nfs_server_address
+        ).encode(),
+    )
 
     # Expect the Pod to become ready, and that it has the volume attached.
-    k8s_util.wait_for_deployment(function_instance, "nfs-server")
     k8s_util.wait_for_resource(
         function_instance,
         "pod",
@@ -126,4 +151,4 @@ def test_nfsplugin_integration(
         text=True,
     )
 
-    assert "/var/www nfs-server.default.svc.cluster.local:/ nfs4" in process.stdout
+    assert f"/var/www {nfs_server_address}:/ nfs4" in process.stdout

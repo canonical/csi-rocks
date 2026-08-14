@@ -1,4 +1,5 @@
 # from: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/deploy/example/nfs-provisioner/nginx-pod.yaml
+# $NFS_SERVER_ADDRESS is substituted with the NFS server's Pod IP by the test.
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -19,9 +20,9 @@ spec:
     driver: nfs.csi.k8s.io
     # volumeHandle format: {nfs-server-address}#{sub-dir-name}#{share-name}
     # make sure this value is unique for every share in the cluster
-    volumeHandle: nfs-server.default.svc.cluster.local/share##
+    volumeHandle: $NFS_SERVER_ADDRESS/share##
     volumeAttributes:
-      server: nfs-server.default.svc.cluster.local
+      server: $NFS_SERVER_ADDRESS
       share: /
 ---
 kind: PersistentVolumeClaim
