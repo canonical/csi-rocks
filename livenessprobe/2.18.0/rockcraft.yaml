@@ -35,6 +35,22 @@ services:
 entrypoint-service: livenessprobe
 
 parts:
+  # `base: bare` stages no base-files, and since the Ubuntu 24.04 /usr-merge the
+  # libc6 deb no longer carries the top-level /lib and /lib64 compatibility
+  # symlinks itself. Without them the ELF interpreter
+  # (/lib64/ld-linux-x86-64.so.2 on amd64, /lib/ld-linux-aarch64.so.1 on arm64)
+  # does not resolve and every binary in the rock, pebble included, dies with
+  # "no such file or directory".
+  usr-merge:
+    plugin: nil
+    override-prime: |
+      craftctl default
+      # No-ops on a build-base that already provides them, so this part stays
+      # correct if it is carried over to another base.
+      [ -e "${CRAFT_PRIME}/lib" ] || ln -s usr/lib "${CRAFT_PRIME}/lib"
+      if [ "${CRAFT_ARCH_BUILD_FOR}" = "amd64" ]; then
+        [ -e "${CRAFT_PRIME}/lib64" ] || ln -s usr/lib64 "${CRAFT_PRIME}/lib64"
+      fi
   openssl:
     plugin: nil
     stage-packages:
